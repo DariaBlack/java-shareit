@@ -34,9 +34,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.item.owner.id = ?1 AND ?2 BETWEEN b.start AND b.end")
     List<Booking> findByItem_Owner_IdAndCurrentTime(Long ownerId, LocalDateTime currentTime, Sort sort);
 
-    // Бронирования для конкретной вещи
-    List<Booking> findByItem_Id(Long itemId, Sort sort);
-
     @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.status = 'APPROVED' AND b.end < ?2")
     List<Booking> findLastBooking(Long itemId, LocalDateTime currentTime, Sort sort);
 
