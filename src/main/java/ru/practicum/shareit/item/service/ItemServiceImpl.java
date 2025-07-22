@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -16,11 +17,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public ItemDto createItem(Long userId, ItemDto itemDto) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
@@ -33,6 +36,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
         Item existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с ID " + itemId + " не найдена"));
@@ -41,18 +45,16 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Пользователь с ID " + userId + " не является владельцем вещи с ID " + itemId);
         }
 
-        Item itemToUpdate = ItemMapper.toItem(itemDto);
-
-        if (itemToUpdate.getName() != null) {
-            existingItem.setName(itemToUpdate.getName());
+        if (itemDto.getName() != null) {
+            existingItem.setName(itemDto.getName());
         }
 
-        if (itemToUpdate.getDescription() != null) {
-            existingItem.setDescription(itemToUpdate.getDescription());
+        if (itemDto.getDescription() != null) {
+            existingItem.setDescription(itemDto.getDescription());
         }
 
-        if (itemToUpdate.getAvailable() != null) {
-            existingItem.setAvailable(itemToUpdate.getAvailable());
+        if (itemDto.getAvailable() != null) {
+            existingItem.setAvailable(itemDto.getAvailable());
         }
 
         Item updatedItem = itemRepository.save(existingItem);
@@ -88,6 +90,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteItem(Long userId, Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с ID " + itemId + " не найдена"));
