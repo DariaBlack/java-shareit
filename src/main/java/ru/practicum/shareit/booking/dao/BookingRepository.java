@@ -48,4 +48,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "((b.start <= ?2 AND b.end > ?2) OR (b.start < ?3 AND b.end >= ?3) OR (b.start >= ?2 AND b.end <= ?3))")
     boolean existsOverlappingBooking(Long itemId, LocalDateTime start, LocalDateTime end);
 
+    // Найти бронирования по списку ID вещей и статусу, отсортированные по дате начала
+    List<Booking> findByItemIdInAndStatusOrderByStartAsc(List<Long> itemIds, BookingStatus status);
+
+    // Проверить существование завершенного бронирования для пользователя и вещи
+    boolean existsByBookerIdAndItemIdAndStatusAndEndBefore(Long bookerId, Long itemId, BookingStatus status, LocalDateTime end);
 }
