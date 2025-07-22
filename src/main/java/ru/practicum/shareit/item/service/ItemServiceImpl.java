@@ -1,16 +1,22 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.dto.BookingShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +27,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     @Transactional
@@ -69,22 +76,55 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsByUserId(Long userId) {
+    public List<ItemWithBookingDto> getItemsByUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
 
-        return itemRepository.findByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
+        List<Item> items = itemRepository.findByOwnerId(userId);
+        LocalDateTime now = LocalDateTime.now();
+
+        return items.stream()
+                .map(item -> {
+                    ItemWithBookingDto itemWithBooking = ItemMapper.toItemWithBookingDto(item);
+
+                    // Получаем последнее завершенное бронирование
+                    List<Booking> lastBookings = bookingRepository.findLastBooking(
+                            item.getId(), now, Sort.by(Sort.Direction.DESC, "end"));
+                    if (!lastBookings.isEmpty()) {
+                        Booking lastBooking = lastBookings.get(0);
+                        itemWithBooking.setLastBooking(new BookingShortDto(
+                                lastBooking.getId(),
+                                lastBooking.getBooker().getId(),
+                                lastBooking.getStart(),
+                                lastBooking.getEnd()
+                        ));
+                    }
+
+                    // Получаем ближайшее будущее бронирование
+                    List<Booking> nextBookings = bookingRepository.findNextBooking(
+                            item.getId(), now, Sort.by(Sort.Direction.ASC, "start"));
+                    if (!nextBookings.isEmpty()) {
+                        Booking nextBooking = nextBookings.get(0);
+                        itemWithBooking.setNextBooking(new BookingShortDto(
+                                nextBooking.getId(),
+                                nextBooking.getBooker().getId(),
+                                nextBooking.getStart(),
+                                nextBooking.getEnd()
+                        ));
+                    }
+
+                    return itemWithBooking;
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemDto> searchItems(String text) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
-        return itemRepository.search(text).stream()
+        return itemRepository.search(text.toLowerCase()).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

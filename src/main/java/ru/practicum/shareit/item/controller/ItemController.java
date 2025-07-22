@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getItemsByUserId(@RequestHeader(USER_ID_HEADER) @Positive Long userId) {
+    public List<ItemWithBookingDto> getItemsByUserId(@RequestHeader(USER_ID_HEADER) @Positive Long userId) {
         return itemService.getItemsByUserId(userId);
     }
 
