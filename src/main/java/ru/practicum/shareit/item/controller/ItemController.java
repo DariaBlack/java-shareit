@@ -5,7 +5,10 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -32,12 +35,13 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable @Positive Long itemId) {
-        return itemService.getItemById(itemId);
+    public ItemWithBookingDto getItemById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                          @PathVariable Long itemId) {
+        return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping
-    public List<ItemDto> getItemsByUserId(@RequestHeader(USER_ID_HEADER) @Positive Long userId) {
+    public List<ItemWithBookingDto> getItemsByUserId(@RequestHeader(USER_ID_HEADER) @Positive Long userId) {
         return itemService.getItemsByUserId(userId);
     }
 
@@ -50,5 +54,12 @@ public class ItemController {
     public void deleteItem(@RequestHeader(USER_ID_HEADER) @Positive Long userId,
                            @PathVariable @Positive Long itemId) {
         itemService.deleteItem(userId, itemId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(USER_ID_HEADER) @Positive Long userId,
+                                 @PathVariable @Positive Long itemId,
+                                 @Valid @RequestBody CommentRequestDto commentRequestDto) {
+        return itemService.addComment(userId, itemId, commentRequestDto);
     }
 }

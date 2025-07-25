@@ -62,4 +62,11 @@ public class ErrorHandler {
         log.error("500 {}", e.getMessage());
         return Map.of("error", e.getMessage());
     }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleValidationException(final ValidationException e) {
+        log.error("400 {}", e.getMessage());
+        return Map.of("error", e.getMessage());
+    }
 }

@@ -1,36 +1,24 @@
 package ru.practicum.shareit.item.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.model.ItemRequest;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ItemMapper {
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getRequest() != null ? item.getRequest().getId() : null
-        );
-    }
+@Mapper(componentModel = "spring")
+public interface ItemMapper {
+    @Mapping(target = "requestId", source = "request.id")
+    @Mapping(target = "comments", ignore = true)
+    ItemDto toItemDto(Item item);
 
-    public static Item toItem(ItemDto itemDto) {
-        Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "owner", ignore = true)
+    @Mapping(target = "request", ignore = true)
+    Item toItem(ItemDto itemDto);
 
-        if (itemDto.getRequestId() != null) {
-            ItemRequest request = new ItemRequest();
-            request.setId(itemDto.getRequestId());
-            item.setRequest(request);
-        }
-
-        return item;
-    }
+    @Mapping(target = "lastBooking", ignore = true)
+    @Mapping(target = "nextBooking", ignore = true)
+    @Mapping(target = "comments", expression = "java(java.util.Collections.emptyList())")
+    ItemWithBookingDto toItemWithBookingDto(Item item);
 }
