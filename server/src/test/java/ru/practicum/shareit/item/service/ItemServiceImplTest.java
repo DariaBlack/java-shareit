@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dao.ItemRepository;
@@ -83,5 +85,47 @@ class ItemServiceImplTest {
         ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
         itemService.deleteItem(owner.getId(), createdItem.getId());
         assertThrows(NotFoundException.class, () -> itemService.getItemById(owner.getId(), createdItem.getId()));
+    }
+
+    @Test
+    void createItemWithNonExistentUser() {
+        assertThrows(NotFoundException.class, () -> itemService.createItem(999L, itemDto));
+    }
+
+    @Test
+    void updateItemWithNonExistentItem() {
+        assertThrows(NotFoundException.class, () -> itemService.updateItem(owner.getId(), 999L, itemDto));
+    }
+
+    @Test
+    void getItemByIdWithNonExistentItem() {
+        assertThrows(NotFoundException.class, () -> itemService.getItemById(owner.getId(), 999L));
+    }
+
+    @Test
+    void getItemsByNonExistentUserId() {
+        assertThrows(NotFoundException.class, () -> itemService.getItemsByUserId(999L));
+    }
+
+    @Test
+    void searchItemsWithEmptyText() {
+        List<ItemDto> items = itemService.searchItems("");
+        assertTrue(items.isEmpty());
+    }
+
+    @Test
+    void addCommentWithNonExistentUser() {
+        assertThrows(NotFoundException.class, () -> itemService.addComment(999L, 1L, new CommentRequestDto("Nice item")));
+    }
+
+    @Test
+    void addCommentWithNonExistentItem() {
+        assertThrows(NotFoundException.class, () -> itemService.addComment(owner.getId(), 999L, new CommentRequestDto("Nice item")));
+    }
+
+    @Test
+    void addCommentWithoutCompletedBooking() {
+        ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
+        assertThrows(BadRequestException.class, () -> itemService.addComment(owner.getId(), createdItem.getId(), new CommentRequestDto("Nice item")));
     }
 }

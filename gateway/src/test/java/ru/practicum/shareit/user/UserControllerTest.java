@@ -65,4 +65,20 @@ class UserControllerTest {
         mockMvc.perform(delete("/users/1"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void whenValidInput_thenUpdateUserReturns200() throws Exception {
+        UserDto userDto = new UserDto(null, "John Doe", "john.doe@example.com");
+
+        mockMvc.perform(patch("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void whenGetAllUsers_thenReturns200() throws Exception {
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isOk());
+    }
 }

@@ -91,4 +91,48 @@ class BaseClientTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+    @Test
+    void testGetWithoutUserId() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.get("/test");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testPostWithoutUserId() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.CREATED);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.post("/test", "body");
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    @Test
+    void testPatchWithoutUserId() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PATCH), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.patch("/test", "body");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testDeleteWithoutUserId() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.delete("/test");
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
 }

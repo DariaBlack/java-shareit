@@ -9,4 +9,9 @@ class ShareItGatewayTest {
     @Test
     void contextLoads() {
     }
+
+    @Test
+    void testMainMethod() {
+        ShareItGateway.main(new String[] {});
+    }
 }

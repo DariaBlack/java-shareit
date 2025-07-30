@@ -9,4 +9,9 @@ class ShareItServerTest {
     @Test
     void contextLoads() {
     }
+
+    @Test
+    void testMainMethod() {
+        ShareItServer.main(new String[] {});
+    }
 }

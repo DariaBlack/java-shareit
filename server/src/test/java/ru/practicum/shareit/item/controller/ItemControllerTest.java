@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -32,10 +34,14 @@ class ItemControllerTest {
     private ObjectMapper objectMapper;
 
     private ItemDto itemDto;
+    private CommentRequestDto commentRequestDto;
+    private CommentDto commentDto;
 
     @BeforeEach
     void setUp() {
         itemDto = new ItemDto(null, "Test Item", "Description", true, null, null);
+        commentRequestDto = new CommentRequestDto("Great item!");
+        commentDto = new CommentDto(1L, "Great item!", "User", null);
     }
 
     @Test
@@ -94,5 +100,17 @@ class ItemControllerTest {
         mockMvc.perform(delete("/items/{itemId}", 1L)
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void addComment() throws Exception {
+        given(itemService.addComment(anyLong(), anyLong(), any(CommentRequestDto.class))).willReturn(commentDto);
+
+        mockMvc.perform(post("/items/{itemId}/comment", 1L)
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentRequestDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.text").value(commentDto.getText()));
     }
 }

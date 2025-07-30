@@ -1,4 +1,3 @@
-
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,5 +95,16 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentRequestDto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenValidInput_thenUpdateItemReturns200() throws Exception {
+        ItemDto itemDto = new ItemDto(null, "Updated Drill", "An updated powerful drill", true, null);
+
+        mockMvc.perform(patch("/items/1")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isOk());
     }
 }

@@ -51,10 +51,20 @@ class UserServiceImplTest {
     }
 
     @Test
+    void updateUserWithNonExistentId() {
+        assertThrows(NotFoundException.class, () -> userService.updateUser(999L, userDto));
+    }
+
+    @Test
     void getUserById() {
         UserDto createdUser = userService.createUser(userDto);
         UserDto foundUser = userService.getUserById(createdUser.getId());
         assertEquals(createdUser.getId(), foundUser.getId());
+    }
+
+    @Test
+    void getUserByIdNotFound() {
+        assertThrows(NotFoundException.class, () -> userService.getUserById(999L));
     }
 
     @Test
@@ -68,5 +78,10 @@ class UserServiceImplTest {
         UserDto createdUser = userService.createUser(userDto);
         userService.deleteUser(createdUser.getId());
         assertThrows(NotFoundException.class, () -> userService.getUserById(createdUser.getId()));
+    }
+
+    @Test
+    void deleteUserNotFound() {
+        assertThrows(NotFoundException.class, () -> userService.deleteUser(999L));
     }
 }
