@@ -5,8 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingDto;
@@ -14,6 +18,7 @@ import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.dao.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +35,9 @@ class ItemServiceImplTest {
 
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     private User owner;
     private ItemDto itemDto;
@@ -127,5 +135,46 @@ class ItemServiceImplTest {
     void addCommentWithoutCompletedBooking() {
         ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
         assertThrows(BadRequestException.class, () -> itemService.addComment(owner.getId(), createdItem.getId(), new CommentRequestDto("Nice item")));
+    }
+
+    @Test
+    void getItemByIdWhenUserIsNotOwner() {
+        ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
+        User anotherUser = new User(null, "Another User", "another@example.com");
+        anotherUser = userRepository.save(anotherUser);
+
+        ItemWithBookingDto foundItem = itemService.getItemById(anotherUser.getId(), createdItem.getId());
+        assertEquals(createdItem.getId(), foundItem.getId());
+        assertNull(foundItem.getLastBooking());
+        assertNull(foundItem.getNextBooking());
+    }
+
+
+    @Test
+    void addCommentWithCompletedBooking() {
+        ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
+
+        Booking booking = new Booking();
+        booking.setItem(itemRepository.findById(createdItem.getId()).orElseThrow());
+        booking.setBooker(owner);
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
+        booking.setStatus(BookingStatus.APPROVED);
+        bookingRepository.save(booking);
+
+        CommentRequestDto commentRequestDto = new CommentRequestDto("Great item!");
+        CommentDto commentDto = itemService.addComment(owner.getId(), createdItem.getId(), commentRequestDto);
+
+        assertNotNull(commentDto.getId());
+        assertEquals("Great item!", commentDto.getText());
+    }
+
+    @Test
+    void deleteItemWhenUserIsNotOwner() {
+        final ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
+        final User anotherUser = new User(null, "Another User", "another@example.com");
+        final User savedAnotherUser = userRepository.save(anotherUser);
+
+        assertThrows(NotFoundException.class, () -> itemService.deleteItem(savedAnotherUser.getId(), createdItem.getId()));
     }
 }
