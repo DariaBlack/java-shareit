@@ -135,4 +135,59 @@ class BaseClientTest {
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
+
+    @Test
+    void testGetWithUserId() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.get("/test", 1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testPatchWithUserIdWithoutBody() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PATCH), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.patch("/test", 1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testPostWithUserIdAndBody() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.CREATED);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.post("/test", 1L, "body");
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    @Test
+    void testPutWithUserIdAndBodyOnly() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.put("/test", 1L, "body");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testDeleteWithUserIdOnly() {
+        ResponseEntity<Object> expectedResponse = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Object.class)))
+                .thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = baseClient.delete("/test", 1L);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
 }
