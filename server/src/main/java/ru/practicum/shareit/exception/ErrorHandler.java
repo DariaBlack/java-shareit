@@ -40,7 +40,6 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
-
     @ExceptionHandler(NotAvailableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleNotAvailableException(final NotAvailableException e) {
