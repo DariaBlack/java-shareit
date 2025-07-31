@@ -99,7 +99,8 @@ class BookingServiceImplTest {
         item.setAvailable(false);
         itemRepository.save(item);
 
-        assertThrows(NotAvailableException.class, () -> bookingService.createBooking(booker.getId(), bookingRequestDto));
+        assertThrows(NotAvailableException.class, () ->
+                bookingService.createBooking(booker.getId(), bookingRequestDto));
     }
 
     @Test

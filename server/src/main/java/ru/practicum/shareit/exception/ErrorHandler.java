@@ -33,20 +33,6 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleException(final Exception e) {
-        log.error("500 {}", e.getMessage());
-        return Map.of("error", e.getMessage());
-    }
-
-    @ExceptionHandler(NotAvailableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleNotAvailableException(final NotAvailableException e) {
-        log.error("400 {}", e.getMessage());
-        return Map.of("error", e.getMessage());
-    }
-
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleConflictException(final ConflictException e) {
@@ -54,10 +40,17 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleBadRequestException(final BadRequestException e) {
-        log.error("400 {}", e.getMessage());
+    @ExceptionHandler(NotAvailableException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleNotAvailableException(final NotAvailableException e) {
+        log.error("409 {}", e.getMessage());
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleException(final Exception e) {
+        log.error("500 {}", e.getMessage());
         return Map.of("error", e.getMessage());
     }
 }

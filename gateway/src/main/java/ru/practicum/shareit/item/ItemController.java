@@ -1,15 +1,18 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/items")
@@ -48,8 +51,14 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Object> searchItems(@RequestParam String text) {
+    public ResponseEntity<Object> searchItems(@RequestParam @NotNull String text) {
         log.info("Search items with text={}", text);
+
+        if (!StringUtils.hasText(text)) {
+            log.info("Search text is blank or null, returning empty list");
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
         return itemClient.searchItems(text);
     }
 

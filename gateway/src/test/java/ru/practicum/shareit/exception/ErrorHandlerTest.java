@@ -28,7 +28,9 @@ class ErrorHandlerTest {
 
     @Test
     void whenConstraintViolation_thenReturns400() throws Exception {
-        mockMvc.perform(get("/test/validate-param?name="));
+        mockMvc.perform(get("/test/validate-param?name="))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
     }
 
     @Test
@@ -43,12 +45,5 @@ class ErrorHandlerTest {
         mockMvc.perform(get("/test/validation-exception"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Ошибка проверки данных"));
-    }
-
-    @Test
-    void whenUnexpectedException_thenReturns500() throws Exception {
-        mockMvc.perform(get("/test/unexpected"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("Произошла непредвиденная ошибка"));
     }
 }

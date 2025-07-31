@@ -21,9 +21,9 @@ public class TestController {
         throw new AccessDeniedException("Доступ запрещён");
     }
 
-    @GetMapping("/test/exception")
-    public void throwException() {
-        throw new RuntimeException("Внутренняя ошибка");
+    @GetMapping("/test/conflict")
+    public void throwConflictException() {
+        throw new ConflictException("Конфликт");
     }
 
     @GetMapping("/test/not-available")
@@ -31,13 +31,8 @@ public class TestController {
         throw new NotAvailableException("Недоступно");
     }
 
-    @GetMapping("/test/conflict")
-    public void throwConflictException() {
-        throw new ConflictException("Конфликт");
-    }
-
-    @GetMapping("/test/bad-request")
-    public void throwBadRequestException() {
-        throw new BadRequestException("Некорректный запрос");
+    @GetMapping("/test/exception")
+    public void throwException() {
+        throw new RuntimeException("Внутренняя ошибка");
     }
 }

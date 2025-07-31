@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
@@ -134,7 +134,7 @@ class ItemServiceImplTest {
     @Test
     void addCommentWithoutCompletedBooking() {
         ItemDto createdItem = itemService.createItem(owner.getId(), itemDto);
-        assertThrows(BadRequestException.class, () -> itemService.addComment(owner.getId(), createdItem.getId(), new CommentRequestDto("Nice item")));
+        assertThrows(NotAvailableException.class, () -> itemService.addComment(owner.getId(), createdItem.getId(), new CommentRequestDto("Nice item")));
     }
 
     @Test
@@ -148,7 +148,6 @@ class ItemServiceImplTest {
         assertNull(foundItem.getLastBooking());
         assertNull(foundItem.getNextBooking());
     }
-
 
     @Test
     void addCommentWithCompletedBooking() {

@@ -35,16 +35,10 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleException(Exception e) {
-        log.error("Unexpected error", e);
-        return Map.of("error", "Произошла непредвиденная ошибка");
-    }
-
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationException(ValidationException e) {
+        log.warn("Validation exception: {}", e.getMessage());
         return Map.of("error", e.getMessage());
     }
 }

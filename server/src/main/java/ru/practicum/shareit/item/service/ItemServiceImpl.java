@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import ru.practicum.shareit.exception.BadRequestException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +8,8 @@ import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.exception.ConflictException;
+import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
@@ -230,12 +231,11 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
-        // Проверяем только то, что бронирование завершилось (без учета статуса)
         LocalDateTime now = LocalDateTime.now();
         boolean hasCompletedBooking = bookingRepository.existsByBookerIdAndItemIdAndEndBefore(userId, itemId, now);
 
         if (!hasCompletedBooking) {
-            throw new BadRequestException("Пользователь с id " + userId + " не брал вещь с itemId " + itemId + " в аренду");
+            throw new NotAvailableException("Пользователь с id " + userId + " не брал вещь с itemId " + itemId + " в аренду");
         }
 
         Comment comment = commentMapper.toComment(commentRequestDto, item, author);

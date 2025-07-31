@@ -5,11 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -106,5 +110,40 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void whenSearchTextIsBlank_thenReturnsEmptyList() throws Exception {
+        mockMvc.perform(get("/items/search")
+                        .param("text", ""))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+
+        verify(itemClient, never()).searchItems(any());
+    }
+
+    @Test
+    void whenSearchTextIsWhitespace_thenReturnsEmptyList() throws Exception {
+        mockMvc.perform(get("/items/search")
+                        .param("text", "   "))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+
+        verify(itemClient, never()).searchItems(any());
+    }
+
+    @Test
+    void whenSearchTextIsValid_thenDelegatesToClient() throws Exception {
+        ItemDto sample = new ItemDto(1L, "Drill", "A powerful drill", true, null);
+        List<ItemDto> payload = List.of(sample);
+        when(itemClient.searchItems("drill"))
+                .thenReturn(ResponseEntity.ok(payload));
+
+        mockMvc.perform(get("/items/search")
+                        .param("text", "drill"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(payload)));
+
+        verify(itemClient, times(1)).searchItems("drill");
     }
 }

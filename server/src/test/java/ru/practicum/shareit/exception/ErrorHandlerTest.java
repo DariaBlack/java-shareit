@@ -38,20 +38,6 @@ class ErrorHandlerTest {
     }
 
     @Test
-    void handleException() throws Exception {
-        mockMvc.perform(get("/test/exception"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("Внутренняя ошибка"));
-    }
-
-    @Test
-    void handleNotAvailableException() throws Exception {
-        mockMvc.perform(get("/test/not-available"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Недоступно"));
-    }
-
-    @Test
     void handleConflictException() throws Exception {
         mockMvc.perform(get("/test/conflict"))
                 .andExpect(status().isConflict())
@@ -59,9 +45,16 @@ class ErrorHandlerTest {
     }
 
     @Test
-    void handleBadRequestException() throws Exception {
-        mockMvc.perform(get("/test/bad-request"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Некорректный запрос"));
+    void handleNotAvailableException() throws Exception {
+        mockMvc.perform(get("/test/not-available"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Недоступно"));
+    }
+
+    @Test
+    void handleException() throws Exception {
+        mockMvc.perform(get("/test/exception"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Внутренняя ошибка"));
     }
 }

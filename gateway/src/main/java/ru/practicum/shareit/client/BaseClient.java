@@ -1,6 +1,11 @@
 package ru.practicum.shareit.client;
 
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -78,17 +83,22 @@ public class BaseClient {
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Long userId, @Nullable Map<String, Object> parameters, @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        ResponseEntity<Object> shareitServerResponse;
+        ResponseEntity<Object> serverResponse;
         try {
             if (parameters != null) {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                serverResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
             } else {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class);
+                serverResponse = rest.exchange(path, method, requestEntity, Object.class);
             }
         } catch (HttpStatusCodeException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
+            // Преобразуем любой код ошибки сервера в ResponseEntity и отправляем в маппер
+            ResponseEntity<Object> errorResponse = ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(e.getResponseBodyAsByteArray());
+            return prepareGatewayResponse(errorResponse);
         }
-        return prepareGatewayResponse(shareitServerResponse);
+
+        return prepareGatewayResponse(serverResponse);
     }
 
     private HttpHeaders defaultHeaders(Long userId) {
@@ -101,17 +111,25 @@ public class BaseClient {
         return headers;
     }
 
+    /**
+     * Если сервер вернул 2xx — возвращаем как есть.
+     * Если сервер вернул 409 (CONFLICT) — меняем на 400 (BAD_REQUEST).
+     * Все остальные статусы (404, 403, 500 и т. п.) прокидываем без изменений.
+     */
     private static ResponseEntity<Object> prepareGatewayResponse(ResponseEntity<Object> response) {
-        if (response.getStatusCode().is2xxSuccessful()) {
+        int rawStatus = response.getStatusCode().value();
+
+        if (rawStatus >= 200 && rawStatus < 300) {
             return response;
         }
 
-        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(response.getStatusCode());
+        int mappedStatus = (rawStatus == HttpStatus.CONFLICT.value())
+                ? HttpStatus.BAD_REQUEST.value()
+                : rawStatus;
 
-        if (response.hasBody()) {
-            return responseBuilder.body(response.getBody());
-        }
-
-        return responseBuilder.build();
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(mappedStatus);
+        return response.hasBody()
+                ? builder.body(response.getBody())
+                : builder.build();
     }
 }
